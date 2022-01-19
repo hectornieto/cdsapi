@@ -99,7 +99,8 @@ class Result(object):
         if target is None:
             target = url.split("/")[-1]
 
-        self.info("Downloading %s to %s (%s)", url, target, bytes_to_string(size))
+		# Avoid printing messages during download due to QGIS issues
+#         self.info("Downloading %s to %s (%s)", url, target, bytes_to_string(size))
         start = time.time()
 
         mode = "wb"
@@ -120,21 +121,11 @@ class Result(object):
             try:
                 r.raise_for_status()
 
-                with tqdm(
-                    total=size,
-                    unit_scale=True,
-                    unit_divisor=1024,
-                    unit="B",
-                    disable=not self.progress,
-                    leave=False,
-                ) as pbar:
-                    pbar.update(total)
-                    with open(target, mode) as f:
-                        for chunk in r.iter_content(chunk_size=1024):
-                            if chunk:
-                                f.write(chunk)
-                                total += len(chunk)
-                                pbar.update(len(chunk))
+                with open(target, mode) as f:
+                    for chunk in r.iter_content(chunk_size=1024):
+                        if chunk:
+                            f.write(chunk)
+                            total += len(chunk)
 
             except requests.exceptions.ConnectionError as e:
                 self.error("Download interupted: %s" % (e,))
